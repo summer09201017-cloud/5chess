@@ -78,9 +78,7 @@
             <div class="section-head compact">
               <div>
                 <p class="eyebrow">投打視窗</p>
-                <h2>好球帶</h2>
               </div>
-              <div class="mini-note">防守時可點擊目標，進攻時觀察來球再揮棒</div>
             </div>
 
             <canvas id="pitchCanvas" width="360" height="440" aria-label="投球視窗"></canvas>
@@ -91,25 +89,6 @@
             <div class="section-head compact">
               <div>
                 <p class="eyebrow">操作區</p>
-                <h2>比賽控制</h2>
-              </div>
-              <div class="mini-note">PC 可用滑鼠與鍵盤，手機可點按鈕與拖曳球場</div>
-            </div>
-
-            <div class="info-grid">
-              <div class="info-box">
-                <span>目前打者</span>
-                <strong id="batterName">海風隊 1 棒</strong>
-              </div>
-            </div>
-
-            <div class="pitcher-meter">
-              <div class="meter-topline">
-                <span id="pitcherInfo">投手</span>
-                <strong id="pitcherStaminaText">體力 100%</strong>
-              </div>
-              <div class="meter-track" aria-hidden="true">
-                <span id="pitcherStaminaBar"></span>
               </div>
             </div>
 
@@ -139,6 +118,25 @@
               <button class="secondary-action" id="stealSecondButton">盜二壘</button>
               <button class="secondary-action" id="stealThirdButton">盜三壘</button>
               <button class="ghost-action" id="restartButton">重新開賽</button>
+            </div>
+
+            <div class="post-action-status">
+              <div class="info-grid">
+                <div class="info-box">
+                  <span>目前打者</span>
+                  <strong id="batterName">海風隊 1 棒</strong>
+                </div>
+              </div>
+
+              <div class="pitcher-meter">
+                <div class="meter-topline">
+                  <span id="pitcherInfo">投手</span>
+                  <strong id="pitcherStaminaText">體力 100%</strong>
+                </div>
+                <div class="meter-track" aria-hidden="true">
+                  <span id="pitcherStaminaBar"></span>
+                </div>
+              </div>
             </div>
 
             <div class="bottom-control-stack">
