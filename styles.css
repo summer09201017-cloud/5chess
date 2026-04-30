@@ -277,11 +277,7 @@ canvas {
 }
 
 .status-panel {
-  margin-top: 16px;
-  padding: 16px 18px;
-  border-radius: 20px;
-  background: var(--panel-strong);
-  border: 1px solid var(--line);
+  display: none;
 }
 
 .status-panel p {
@@ -516,7 +512,6 @@ button:disabled {
   }
 
   .scoreboard,
-  .field-card,
   .pitch-card,
   .control-card,
   .log-card {
@@ -524,14 +519,51 @@ button:disabled {
     border-radius: 24px;
   }
 
+  .field-card {
+    margin-right: -16px;
+    margin-left: -16px;
+    padding: 16px 0 0;
+    overflow: hidden;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .field-card .section-head {
+    padding: 0 16px;
+  }
+
+  #fieldCanvas {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
   .score-grid,
-  .sidebar,
   .info-grid,
   .pitch-type-grid,
   .batting-mode-grid,
   .difficulty-grid,
   .action-grid {
     grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pitch-card {
+    order: 1;
+  }
+
+  .control-card {
+    order: 2;
+  }
+
+  .log-card {
+    order: 3;
+    grid-column: auto;
   }
 
   .primary-action,
