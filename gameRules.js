@@ -1260,7 +1260,7 @@ function createBattedBall({
     fairAngle,
     distanceFeet,
     chasingFielderIds: chasingFielders.map(({ fielder }) => fielder.id),
-    defenseSuccess: userOnOffense() ? Math.random() < BALANCE.defenseCatchRate[type] : false,
+    defenseSuccess: Math.random() < BALANCE.defenseCatchRate[type],
     landed: false,
     resolved: false,
     landingFielderDistance: 999,

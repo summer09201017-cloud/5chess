@@ -253,10 +253,10 @@ const BALANCE = {
     },
   },
   defenseCatchRate: {
-    ground: 0.55,
-    line: 0.30,
-    fly: 0.60,
-    popup: 0.85,
+    ground: 0.78,
+    line: 0.75,
+    fly: 0.82,
+    popup: 0.93,
   },
   pursuerCount: {
     ground: 2,
