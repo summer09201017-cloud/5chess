@@ -46,7 +46,7 @@ body::before {
 .page-shell {
   position: relative;
   z-index: 1;
-  max-width: 1480px;
+  max-width: 2200px;
   margin: 0 auto;
   padding: 24px;
 }
@@ -243,7 +243,7 @@ h2 {
   display: grid;
   gap: 22px;
   margin-top: 22px;
-  grid-template-columns: minmax(0, 1fr) minmax(500px, 1.4fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.9fr);
 }
 
 .field-card {
@@ -483,6 +483,12 @@ button:disabled {
 .ghost-action {
   grid-column: span 2;
   background: rgba(16, 36, 59, 0.06);
+}
+
+.solo-action {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
 }
 
 .log-list {
