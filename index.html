@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>九局熱戰 Baseball Duel</title>
+    <meta name="theme-color" content="#c5482d" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="scoreboard card">
+        <div class="score-topline">
+          <div>
+            <p class="eyebrow">跨平台棒球對戰</p>
+            <h1>九局熱戰</h1>
+          </div>
+          <div class="team-note">你操作主隊，電腦操作客隊</div>
+        </div>
+
+        <div class="score-grid">
+          <div class="team-box away">
+            <span class="team-role">客隊</span>
+            <strong class="team-name">海風隊</strong>
+            <span class="team-score" id="awayScore">0</span>
+          </div>
+          <div class="center-box">
+            <div class="inning-pill">
+              <span id="halfLabel">上半局</span>
+              <strong id="inningLabel">1 局</strong>
+            </div>
+            <div class="count-strip">
+              <span>出局 <strong id="outsValue">0</strong></span>
+              <span>球數 <strong id="countValue">0-0</strong></span>
+            </div>
+          </div>
+          <div class="team-box home">
+            <span class="team-role">主隊</span>
+            <strong class="team-name">赤焰隊</strong>
+            <span class="team-score" id="homeScore">0</span>
+          </div>
+        </div>
+
+        <div class="line-score-wrap" aria-label="逐局比分">
+          <table class="line-score-table">
+            <thead id="lineScoreHead"></thead>
+            <tbody id="lineScoreBody"></tbody>
+          </table>
+        </div>
+      </header>
+
+      <main class="main-layout">
+        <section class="card field-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">球場視角</p>
+              <h2>攻守現場</h2>
+            </div>
+            <div class="chip-row">
+              <span class="chip" id="modeTag">你的防守</span>
+              <span class="chip" id="baseState">壘上無人</span>
+            </div>
+          </div>
+
+          <canvas id="fieldCanvas" width="840" height="660" aria-label="棒球場畫面"></canvas>
+
+          <div class="status-panel">
+            <p id="playStatus">比賽開始，客隊先攻，你先守備。</p>
+            <p id="lastPlay">先選一個球種，再點擊右側好球帶設定落點。</p>
+          </div>
+        </section>
+
+        <aside class="sidebar">
+          <section class="card pitch-card">
+            <div class="section-head compact">
+              <div>
+                <p class="eyebrow">投打視窗</p>
+                <h2>好球帶</h2>
+              </div>
+              <div class="mini-note">防守時可點擊目標，進攻時觀察來球再揮棒</div>
+            </div>
+
+            <canvas id="pitchCanvas" width="360" height="440" aria-label="投球視窗"></canvas>
+            <p class="pitch-hint" id="pitchHint">點擊好球帶設定落點，投球後曲球與滑球會有不同位移。</p>
+          </section>
+
+          <section class="card control-card">
+            <div class="section-head compact">
+              <div>
+                <p class="eyebrow">操作區</p>
+                <h2>比賽控制</h2>
+              </div>
+              <div class="mini-note">PC 可用滑鼠與鍵盤，手機可點按鈕與拖曳球場</div>
+            </div>
+
+            <div class="info-grid">
+              <div class="info-box">
+                <span>目前打者</span>
+                <strong id="batterName">海風隊 1 棒</strong>
+              </div>
+              <div class="info-box">
+                <span>快捷鍵</span>
+                <strong>1 正常 / 2 拉打 / 3 推打 / B 觸擊 / WASD 守備</strong>
+              </div>
+            </div>
+
+            <div class="pitcher-meter">
+              <div class="meter-topline">
+                <span id="pitcherInfo">投手</span>
+                <strong id="pitcherStaminaText">體力 100%</strong>
+              </div>
+              <div class="meter-track" aria-hidden="true">
+                <span id="pitcherStaminaBar"></span>
+              </div>
+            </div>
+
+            <div class="coach-box" id="coachAdvice">AI 教練建議會依情境更新。</div>
+
+            <div class="control-section">
+              <p class="control-label">打擊策略</p>
+              <div class="batting-mode-grid">
+                <button class="mode-button is-active" data-batting-mode="normal">正常</button>
+                <button class="mode-button" data-batting-mode="pull">拉打</button>
+                <button class="mode-button" data-batting-mode="push">推打</button>
+                <button class="mode-button" data-batting-mode="bunt">觸擊</button>
+              </div>
+            </div>
+
+            <div class="control-section">
+              <p class="control-label">難度</p>
+              <div class="difficulty-grid">
+                <button class="mode-button" data-difficulty="rookie">新手</button>
+                <button class="mode-button is-active" data-difficulty="normal">標準</button>
+                <button class="mode-button" data-difficulty="veteran">老手</button>
+              </div>
+            </div>
+
+            <div class="control-section">
+              <p class="control-label">球種</p>
+              <div class="pitch-type-grid">
+                <button class="pitch-type-button is-active" data-pitch-type="fastball">直球</button>
+                <button class="pitch-type-button" data-pitch-type="curve">曲球</button>
+                <button class="pitch-type-button" data-pitch-type="slider">滑球</button>
+                <button class="pitch-type-button" data-pitch-type="splitter">指叉</button>
+              </div>
+            </div>
+
+            <div class="action-grid">
+              <button class="primary-action" id="primaryAction">投球</button>
+              <button class="secondary-action" id="swingButton">揮棒</button>
+              <button class="secondary-action" id="stealSecondButton">盜二壘</button>
+              <button class="secondary-action" id="stealThirdButton">盜三壘</button>
+              <button class="ghost-action" id="restartButton">重新開賽</button>
+            </div>
+          </section>
+
+          <section class="card log-card">
+            <div class="section-head compact">
+              <div>
+                <p class="eyebrow">比賽播報</p>
+                <h2>最近事件</h2>
+              </div>
+            </div>
+
+            <ul class="log-list" id="playLog"></ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="constants.js" defer></script>
+    <script src="gameRules.js" defer></script>
+    <script src="render.js" defer></script>
+    <script src="input.js" defer></script>
+    <script src="pwa.js" defer></script>
+  </body>
+</html>
