@@ -318,6 +318,10 @@ canvas {
   grid-template-columns: 1fr 1fr;
 }
 
+.info-grid .info-box:only-child {
+  grid-column: 1 / -1;
+}
+
 .info-box,
 .control-section {
   margin-top: 16px;
@@ -456,6 +460,10 @@ button:disabled {
 .coach-box {
   color: var(--ink);
   line-height: 1.55;
+}
+
+.bottom-control-stack {
+  margin-top: 18px;
 }
 
 .primary-action {

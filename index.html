@@ -101,10 +101,6 @@
                 <span>目前打者</span>
                 <strong id="batterName">海風隊 1 棒</strong>
               </div>
-              <div class="info-box">
-                <span>快捷鍵</span>
-                <strong>1 正常 / 2 拉打 / 3 推打 / B 觸擊 / WASD 守備</strong>
-              </div>
             </div>
 
             <div class="pitcher-meter">
@@ -117,8 +113,6 @@
               </div>
             </div>
 
-            <div class="coach-box" id="coachAdvice">AI 教練建議會依情境更新。</div>
-
             <div class="control-section">
               <p class="control-label">打擊策略</p>
               <div class="batting-mode-grid">
@@ -126,15 +120,6 @@
                 <button class="mode-button" data-batting-mode="pull">拉打</button>
                 <button class="mode-button" data-batting-mode="push">推打</button>
                 <button class="mode-button" data-batting-mode="bunt">觸擊</button>
-              </div>
-            </div>
-
-            <div class="control-section">
-              <p class="control-label">難度</p>
-              <div class="difficulty-grid">
-                <button class="mode-button" data-difficulty="rookie">新手</button>
-                <button class="mode-button is-active" data-difficulty="normal">標準</button>
-                <button class="mode-button" data-difficulty="veteran">老手</button>
               </div>
             </div>
 
@@ -154,6 +139,24 @@
               <button class="secondary-action" id="stealSecondButton">盜二壘</button>
               <button class="secondary-action" id="stealThirdButton">盜三壘</button>
               <button class="ghost-action" id="restartButton">重新開賽</button>
+            </div>
+
+            <div class="bottom-control-stack">
+              <div class="coach-box" id="coachAdvice">AI 教練建議會依情境更新。</div>
+
+              <div class="control-section">
+                <p class="control-label">難度</p>
+                <div class="difficulty-grid">
+                  <button class="mode-button" data-difficulty="rookie">新手</button>
+                  <button class="mode-button is-active" data-difficulty="normal">標準</button>
+                  <button class="mode-button" data-difficulty="veteran">老手</button>
+                </div>
+              </div>
+
+              <div class="info-box shortcut-box">
+                <span>快捷鍵</span>
+                <strong>1 正常 / 2 拉打 / 3 推打 / B 觸擊 / WASD 守備</strong>
+              </div>
             </div>
           </section>
 

@@ -108,10 +108,10 @@ const PITCH_TYPES = {
 };
 
 const STRIKE_ZONE = {
-  left: 0.32,
-  right: 0.68,
-  top: 0.31,
-  bottom: 0.75,
+  left: 0.28,
+  right: 0.72,
+  top: 0.26,
+  bottom: 0.8,
 };
 
 const FIELD = {
