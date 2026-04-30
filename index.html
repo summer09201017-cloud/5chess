@@ -32,10 +32,6 @@
               <span id="halfLabel">上半局</span>
               <strong id="inningLabel">1 局</strong>
             </div>
-            <div class="count-strip">
-              <span>出局 <strong id="outsValue">0</strong></span>
-              <span>球數 <strong id="countValue">0-0</strong></span>
-            </div>
           </div>
           <div class="team-box home">
             <span class="team-role">主隊</span>
@@ -79,6 +75,10 @@
               <div>
                 <p class="eyebrow">投打視窗</p>
               </div>
+              <div class="count-strip">
+                <span>出局 <strong id="outsValue">0</strong></span>
+                <span>球數 <strong id="countValue">0-0</strong></span>
+              </div>
             </div>
 
             <canvas id="pitchCanvas" width="360" height="440" aria-label="投球視窗"></canvas>
@@ -93,22 +93,22 @@
             </div>
 
             <div class="control-section">
-              <p class="control-label">打擊策略</p>
-              <div class="batting-mode-grid">
-                <button class="mode-button is-active" data-batting-mode="normal">正常</button>
-                <button class="mode-button" data-batting-mode="pull">拉打</button>
-                <button class="mode-button" data-batting-mode="push">推打</button>
-                <button class="mode-button" data-batting-mode="bunt">觸擊</button>
-              </div>
-            </div>
-
-            <div class="control-section">
               <p class="control-label">球種</p>
               <div class="pitch-type-grid">
                 <button class="pitch-type-button is-active" data-pitch-type="fastball">直球</button>
                 <button class="pitch-type-button" data-pitch-type="curve">曲球</button>
                 <button class="pitch-type-button" data-pitch-type="slider">滑球</button>
                 <button class="pitch-type-button" data-pitch-type="splitter">指叉</button>
+              </div>
+            </div>
+
+            <div class="control-section">
+              <p class="control-label">打擊策略</p>
+              <div class="batting-mode-grid">
+                <button class="mode-button is-active" data-batting-mode="normal">正常</button>
+                <button class="mode-button" data-batting-mode="pull">拉打</button>
+                <button class="mode-button" data-batting-mode="push">推打</button>
+                <button class="mode-button" data-batting-mode="bunt">觸擊</button>
               </div>
             </div>
 

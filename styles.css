@@ -104,11 +104,14 @@ h2 {
 }
 
 .team-note,
-.mini-note,
-.pitch-hint {
+.mini-note {
   color: var(--ink-soft);
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+.pitch-hint {
+  display: none;
 }
 
 .score-grid {
@@ -240,7 +243,7 @@ h2 {
   display: grid;
   gap: 22px;
   margin-top: 22px;
-  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) minmax(500px, 1.4fr);
 }
 
 .field-card {
