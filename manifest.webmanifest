@@ -4,8 +4,9 @@
   "description": "可投球、揮棒、手動跑壘與手動守備的棒球對戰遊戲。",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
   "background_color": "#fae5c5",
   "theme_color": "#c5482d",
   "icons": [

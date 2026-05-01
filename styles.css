@@ -634,6 +634,10 @@ button:disabled {
   }
 }
 
+#fsToggleButton {
+  display: none;
+}
+
 /* === 手機橫向：50/50 緊湊版面 === */
 @media (orientation: landscape) and (max-height: 540px) {
   html,
@@ -971,5 +975,35 @@ button:disabled {
     border-radius: 8px;
     font-size: 0.7rem;
     line-height: 1.4;
+  }
+
+  /* --- 全螢幕切換按鈕 --- */
+  #fsToggleButton {
+    display: block;
+    position: fixed;
+    top: 6px;
+    left: 6px;
+    z-index: 9999;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(16, 36, 59, 0.62);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  }
+
+  #fsToggleButton[hidden] {
+    display: none;
+  }
+
+  #fsToggleButton.is-active {
+    background: rgba(196, 72, 45, 0.85);
   }
 }
