@@ -108,15 +108,12 @@
               </div>
             </div>
 
-            <button class="secondary-action solo-action" id="swingButton">揮棒</button>
-
             <div class="control-section">
-              <p class="control-label">打擊策略</p>
-              <div class="batting-mode-grid">
-                <button class="mode-button is-active" data-batting-mode="normal">正常</button>
-                <button class="mode-button" data-batting-mode="pull">拉打</button>
-                <button class="mode-button" data-batting-mode="push">推打</button>
-                <button class="mode-button" data-batting-mode="bunt">觸擊</button>
+              <p class="control-label">揮擊段位（按下即揮棒）</p>
+              <div class="swing-zone-grid">
+                <button class="swing-zone-button" id="swingHighButton" data-swing-zone="high">上段</button>
+                <button class="swing-zone-button is-primary" id="swingButton" data-swing-zone="middle">中段揮棒</button>
+                <button class="swing-zone-button" id="swingLowButton" data-swing-zone="low">下段</button>
               </div>
             </div>
 
@@ -146,7 +143,10 @@
             </div>
 
             <div class="bottom-control-stack">
-              <div class="coach-box" id="coachAdvice">AI 教練建議會依情境更新。</div>
+              <div class="control-section">
+                <p class="control-label">最新戰況報告</p>
+                <div class="coach-box" id="coachAdvice">AI 戰況播報會即時更新。</div>
+              </div>
 
               <div class="control-section">
                 <p class="control-label">難度</p>
@@ -159,7 +159,7 @@
 
               <div class="info-box shortcut-box">
                 <span>快捷鍵</span>
-                <strong>1 正常 / 2 拉打 / 3 推打 / B 觸擊 / WASD 守備</strong>
+                <strong>Q 上段 / W 中段揮棒 / E 下段 / WASD 守備</strong>
               </div>
             </div>
           </section>

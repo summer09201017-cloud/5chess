@@ -5,26 +5,26 @@ const TEAM_NAMES = {
 
 const LINEUPS = {
   away: [
-    { name: "江海岳", speed: 66, contact: 60, power: 54 },
-    { name: "周柏廷", speed: 58, contact: 67, power: 57 },
-    { name: "林思遠", speed: 63, contact: 72, power: 61 },
-    { name: "陳曜廷", speed: 54, contact: 68, power: 74 },
-    { name: "許振宇", speed: 59, contact: 64, power: 69 },
-    { name: "何子淵", speed: 62, contact: 61, power: 58 },
-    { name: "沈冠銘", speed: 71, contact: 58, power: 49 },
-    { name: "溫哲安", speed: 64, contact: 57, power: 53 },
-    { name: "韓奕辰", speed: 55, contact: 62, power: 52 },
+    { name: "江海岳", speed: 66, contact: 60, power: 54, bats: "L" },
+    { name: "周柏廷", speed: 58, contact: 67, power: 57, bats: "R" },
+    { name: "林思遠", speed: 63, contact: 72, power: 61, bats: "R" },
+    { name: "陳曜廷", speed: 54, contact: 68, power: 74, bats: "L" },
+    { name: "許振宇", speed: 59, contact: 64, power: 69, bats: "R" },
+    { name: "何子淵", speed: 62, contact: 61, power: 58, bats: "R" },
+    { name: "沈冠銘", speed: 71, contact: 58, power: 49, bats: "L" },
+    { name: "溫哲安", speed: 64, contact: 57, power: 53, bats: "R" },
+    { name: "韓奕辰", speed: 55, contact: 62, power: 52, bats: "R" },
   ],
   home: [
-    { name: "王承澤", speed: 68, contact: 62, power: 56 },
-    { name: "郭浩鈞", speed: 61, contact: 69, power: 58 },
-    { name: "葉昀哲", speed: 58, contact: 74, power: 64 },
-    { name: "吳尚勳", speed: 56, contact: 68, power: 76 },
-    { name: "鄭凱嵐", speed: 70, contact: 60, power: 55 },
-    { name: "徐家朗", speed: 63, contact: 65, power: 60 },
-    { name: "顏博勛", speed: 72, contact: 57, power: 50 },
-    { name: "謝彥廷", speed: 59, contact: 63, power: 54 },
-    { name: "傅予辰", speed: 57, contact: 61, power: 52 },
+    { name: "王承澤", speed: 68, contact: 62, power: 56, bats: "R" },
+    { name: "郭浩鈞", speed: 61, contact: 69, power: 58, bats: "L" },
+    { name: "葉昀哲", speed: 58, contact: 74, power: 64, bats: "R" },
+    { name: "吳尚勳", speed: 56, contact: 68, power: 76, bats: "L" },
+    { name: "鄭凱嵐", speed: 70, contact: 60, power: 55, bats: "R" },
+    { name: "徐家朗", speed: 63, contact: 65, power: 60, bats: "R" },
+    { name: "顏博勛", speed: 72, contact: 57, power: 50, bats: "L" },
+    { name: "謝彥廷", speed: 59, contact: 63, power: 54, bats: "R" },
+    { name: "傅予辰", speed: 57, contact: 61, power: 52, bats: "R" },
   ],
 };
 
@@ -56,11 +56,12 @@ const PITCHING_STAFF = {
 };
 
 const BATTING_MODES = {
-  normal: { label: "正常", shortLabel: "正常" },
-  pull: { label: "拉打", shortLabel: "拉" },
-  push: { label: "推打", shortLabel: "推" },
-  bunt: { label: "觸擊", shortLabel: "觸" },
+  high: { label: "上段揮擊", shortLabel: "上" },
+  middle: { label: "中段揮擊", shortLabel: "中" },
+  low: { label: "下段揮擊", shortLabel: "下" },
 };
+
+const SWING_ZONES = ["high", "middle", "low"];
 
 const DIFFICULTY_LEVELS = {
   rookie: { label: "新手" },
@@ -156,14 +157,17 @@ const LOGICAL = {
 
 const BALANCE = {
   batting: {
-    contactInZone: 0.9,
-    contactOutZone: 0.4,
-    timingPenalty: 2.4,
-    deceptionPenalty: 0.6,
-    contactMin: 0.08,
-    contactMax: 0.94,
-    foulTimingThreshold: 0.16,
-    foulOutZoneRate: 0.52,
+    contactInZone: 0.95,
+    contactOutZone: 0.78,
+    timingPenalty: 0.6,
+    deceptionPenalty: 0.18,
+    contactMin: 0.7,
+    contactMax: 0.98,
+    foulTimingThreshold: 0.32,
+    foulOutZoneRate: 0.18,
+    swingZoneMatchBonus: 0.12,
+    swingZoneAdjacentBonus: 0.04,
+    swingZoneOppositePenalty: -0.05,
     pullBiasScale: 170,
     pullBiasRandom: 8,
     pullBiasLimit: 58,

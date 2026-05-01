@@ -267,8 +267,33 @@ function setBattingMode(mode) {
     return;
   }
   game.battingMode = mode;
-  game.lastPlay = `打擊策略切換為${BATTING_MODES[mode].label}。`;
+  game.lastPlay = `揮擊段位設定為${BATTING_MODES[mode].label}。`;
   renderAll();
+}
+
+function pitchZoneBand(target) {
+  const t = STRIKE_ZONE.top;
+  const b = STRIKE_ZONE.bottom;
+  const span = b - t;
+  const y = target?.y ?? 0.5;
+  if (y < t + span / 3) return "high";
+  if (y < t + (span * 2) / 3) return "middle";
+  return "low";
+}
+
+function zoneMatchBonus(userZone, pitchZone) {
+  if (userZone === pitchZone) return BALANCE.batting.swingZoneMatchBonus;
+  const order = { high: 0, middle: 1, low: 2 };
+  const distance = Math.abs(order[userZone] - order[pitchZone]);
+  if (distance === 1) return BALANCE.batting.swingZoneAdjacentBonus;
+  return BALANCE.batting.swingZoneOppositePenalty;
+}
+
+function triggerSwingDisplay(zone) {
+  game.swingDisplay = {
+    zone,
+    expires: performance.now() + 280,
+  };
 }
 
 function setDifficulty(level) {
@@ -518,9 +543,10 @@ function resetGame() {
     lastPlay: "先選球種，再點右側好球帶設定投球落點。",
     selectedPitchType: "fastball",
     selectedTarget: { x: 0.5, y: 0.56 },
-    battingMode: "normal",
+    battingMode: "middle",
     difficulty: previousDifficulty,
     autoPitchTimer: 0,
+    swingDisplay: null,
     pitchers: buildPitchers(),
     phase: "awaitPitch",
     currentPitch: null,
@@ -1017,7 +1043,7 @@ function describeFieldArea(point) {
   return dx < -70 ? "左外野深處" : dx > 70 ? "右外野深處" : "中外野深處";
 }
 
-function resolveUserSwing(progress) {
+function resolveUserSwing(progress, zoneOverride) {
   const pitch = game.currentPitch;
   if (!pitch || pitch.resolved || pitch.userSwung || game.pendingSteal) {
     return;
@@ -1026,23 +1052,23 @@ function resolveUserSwing(progress) {
   pitch.userSwung = true;
   pitch.resolved = true;
 
+  const userZone = SWING_ZONES.includes(zoneOverride)
+    ? zoneOverride
+    : game.battingMode || "middle";
+  game.battingMode = userZone;
+  triggerSwingDisplay(userZone);
+
   const timingDelta = progress - pitch.contactPoint;
   const timingError = Math.abs(timingDelta);
   const inZone = inStrikeZone(pitch.actualTarget);
   const pitchType = pitch.profile || PITCH_TYPES[pitch.pitchTypeKey];
-  const mode = game.battingMode;
-  const protectMode = game.strikes >= 2 && mode !== "bunt";
+  const pitchZone = pitchZoneBand(pitch.actualTarget);
+  const protectMode = game.strikes >= 2;
+
   let contactChance = inZone ? BALANCE.batting.contactInZone : BALANCE.batting.contactOutZone;
-  contactChance -=
-    timingError *
-    (mode === "bunt" ? BALANCE.batting.buntTimingPenalty : BALANCE.batting.timingPenalty);
+  contactChance -= timingError * BALANCE.batting.timingPenalty;
   contactChance -= pitchType.deception * BALANCE.batting.deceptionPenalty;
-  if (mode === "push") {
-    contactChance += BALANCE.batting.pushContactBonus;
-  }
-  if (mode === "bunt") {
-    contactChance += BALANCE.batting.buntContactBonus + game.activeBatter.contact * 0.001;
-  }
+  contactChance += zoneMatchBonus(userZone, pitchZone);
   if (protectMode) {
     contactChance += BALANCE.batting.protectContactBonus;
   }
@@ -1069,9 +1095,7 @@ function resolveUserSwing(progress) {
     return;
   }
 
-  const foulRate =
-    BALANCE.batting.foulOutZoneRate + (mode === "pull" ? BALANCE.batting.pullFoulPenalty : 0);
-  if (timingError > BALANCE.batting.foulTimingThreshold || (!inZone && Math.random() < foulRate)) {
+  if (timingError > BALANCE.batting.foulTimingThreshold || (!inZone && Math.random() < BALANCE.batting.foulOutZoneRate)) {
     if (game.strikes < 2) {
       game.strikes += 1;
     }
@@ -1083,13 +1107,15 @@ function resolveUserSwing(progress) {
     return;
   }
 
-  recordHotZone(BATTING_MODES[mode].label, pitch.actualTarget);
+  recordHotZone(BATTING_MODES[userZone].label, pitch.actualTarget);
   createBattedBall({
     batterSide: "user",
     timingDelta,
     contactQuality: contactChance,
-    battingMode: mode,
+    battingMode: userZone,
     protectMode,
+    swingZone: userZone,
+    pitchZone,
   });
 }
 
@@ -1170,7 +1196,7 @@ function resolveAiSwing() {
       BALANCE.aiBatting.contactQualityMin,
       BALANCE.aiBatting.contactQualityMax
     ),
-    battingMode: "normal",
+    battingMode: "middle",
     protectMode: false,
   });
 }
@@ -1179,21 +1205,22 @@ function createBattedBall({
   batterSide,
   timingDelta,
   contactQuality,
-  battingMode = "normal",
+  battingMode = "middle",
   protectMode = false,
+  swingZone,
+  pitchZone,
 }) {
   const power = game.activeBatter.power;
   const contact = game.activeBatter.contact;
-  let approachAngle = 0;
-  if (battingMode === "pull") {
-    approachAngle = BALANCE.batting.pullAngleBonus;
-  } else if (battingMode === "push") {
-    approachAngle = BALANCE.batting.pushAngleBonus;
-  }
+  // Loft inferred from swing zone: high swing -> launch up, low swing -> grounders.
+  const zone = swingZone || battingMode || "middle";
+  const isHomeBatter = batterSide === "user";
+  const batsLeft = (game.activeBatter?.bats === "L");
+  // Left-handed batters mirror angle bias.
+  const handMirror = isHomeBatter && batsLeft ? -1 : 1;
 
   const pullBias = clamp(
-    timingDelta * BALANCE.batting.pullBiasScale +
-      approachAngle +
+    timingDelta * BALANCE.batting.pullBiasScale * handMirror +
       randomBetween(-BALANCE.batting.pullBiasRandom, BALANCE.batting.pullBiasRandom),
     -BALANCE.batting.pullBiasLimit,
     BALANCE.batting.pullBiasLimit
@@ -1210,18 +1237,21 @@ function createBattedBall({
     (adjustedPower * BALANCE.batting.batSkillPowerWeight +
       contact * BALANCE.batting.batSkillContactWeight) /
     100;
+
+  let zoneLoftBias = 0;
+  if (zone === "high") zoneLoftBias = 0.22;
+  else if (zone === "low") zoneLoftBias = -0.18;
   const loftSeed = clamp(
     BALANCE.batting.loftBase +
       contactQuality * BALANCE.batting.loftContactFactor +
+      zoneLoftBias +
       randomBetween(-BALANCE.batting.loftRandom, BALANCE.batting.loftRandom),
     0,
     1.15
   );
   let type = "line";
 
-  if (battingMode === "bunt") {
-    type = Math.random() < BALANCE.batting.buntPopupRate ? "popup" : "ground";
-  } else if (loftSeed < BALANCE.batting.groundLoftMax) {
+  if (loftSeed < BALANCE.batting.groundLoftMax) {
     type = "ground";
   } else if (loftSeed < BALANCE.batting.lineLoftMax) {
     type = "line";
@@ -1231,13 +1261,11 @@ function createBattedBall({
     type = "popup";
   }
 
+  // Reward zone-matched solid contact with extra distance.
+  const zoneMatched = swingZone && pitchZone && swingZone === pitchZone;
   let distanceFeet = 115 + batSkill * 145 + contactQuality * 125;
-  if (battingMode === "pull") {
-    distanceFeet += BALANCE.batting.pullDistanceBonus;
-  } else if (battingMode === "push") {
-    distanceFeet -= BALANCE.batting.pushDistancePenalty;
-  } else if (battingMode === "bunt") {
-    distanceFeet = randomBetween(BALANCE.batting.buntDistanceMin, BALANCE.batting.buntDistanceMax);
+  if (zoneMatched) {
+    distanceFeet += 22;
   }
   if (type === "ground") {
     distanceFeet -= 55;
@@ -1252,9 +1280,8 @@ function createBattedBall({
   distanceFeet = clamp(distanceFeet, 45, 420);
 
   if (
-    battingMode !== "bunt" &&
     Math.abs(pullBias) > BALANCE.batting.foulAngleThreshold &&
-    Math.random() < BALANCE.batting.foulAngleRate + (battingMode === "pull" ? 0.08 : 0)
+    Math.random() < BALANCE.batting.foulAngleRate
   ) {
     if (game.strikes < 2) {
       game.strikes += 1;
@@ -1273,16 +1300,12 @@ function createBattedBall({
   const chasingFielders = closestFielders(landing, BALANCE.pursuerCount[type]);
   const hangTime =
     type === "ground"
-      ? battingMode === "bunt"
-        ? 0.55
-        : 0.8
+      ? 0.8
       : type === "line"
         ? 1.25
         : type === "fly"
           ? 2.3 + contactQuality * 0.8
-          : battingMode === "bunt"
-            ? 1.1
-            : 2.95;
+          : 2.95;
 
   game.battedBall = {
     batterSide,
@@ -1306,7 +1329,7 @@ function createBattedBall({
   setupManualFielding(game.battedBall, chasingFielders[0]?.fielder);
   game.currentPitch = null;
   game.phase = "ballInPlay";
-  feedback(battingMode === "bunt" ? "bunt" : "hit", battingMode === "bunt" ? 10 : 24);
+  feedback("hit", 24);
   game.banner = batterSide === "user" ? "球被打進場內" : "對手把球掃進場內";
   game.lastPlay =
     batterSide === "user"

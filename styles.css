@@ -351,6 +351,7 @@ canvas {
 
 .pitch-type-grid,
 .batting-mode-grid,
+.swing-zone-grid,
 .difficulty-grid,
 .action-grid {
   display: grid;
@@ -362,6 +363,11 @@ canvas {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.swing-zone-grid {
+  grid-template-columns: 1fr 1.4fr 1fr;
+  align-items: stretch;
+}
+
 .difficulty-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -369,6 +375,28 @@ canvas {
 .action-grid {
   margin-top: 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.swing-zone-button {
+  min-height: 56px;
+  padding: 14px 12px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(16, 36, 59, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(16, 36, 59, 0.08);
+  font-weight: 700;
+}
+
+.swing-zone-button.is-primary {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(196, 72, 45, 1), rgba(140, 41, 28, 1));
+  box-shadow: 0 18px 28px rgba(143, 45, 31, 0.3);
+}
+
+.swing-zone-button.is-active {
+  outline: 3px solid rgba(255, 221, 133, 0.85);
+  outline-offset: -3px;
 }
 
 button {
@@ -865,12 +893,18 @@ button:disabled {
   .pitch-type-button,
   .mode-button,
   .secondary-action,
-  .ghost-action {
+  .ghost-action,
+  .swing-zone-button {
     min-height: 30px;
     padding: 4px 6px;
     font-size: 0.72rem;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(16, 36, 59, 0.08);
+  }
+
+  .swing-zone-button.is-primary {
+    font-size: 0.78rem;
+    padding: 6px 8px;
   }
 
   .primary-action {
@@ -907,6 +941,11 @@ button:disabled {
   .pitch-type-grid,
   .batting-mode-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .swing-zone-grid {
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 4px;
   }
 
   .action-grid {

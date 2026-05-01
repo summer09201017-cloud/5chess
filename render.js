@@ -24,11 +24,13 @@ const pitcherStaminaBarEl = document.getElementById("pitcherStaminaBar");
 const coachAdviceEl = document.getElementById("coachAdvice");
 const primaryActionButton = document.getElementById("primaryAction");
 const swingButton = document.getElementById("swingButton");
+const swingHighButton = document.getElementById("swingHighButton");
+const swingLowButton = document.getElementById("swingLowButton");
 const stealSecondButton = document.getElementById("stealSecondButton");
 const stealThirdButton = document.getElementById("stealThirdButton");
 const restartButton = document.getElementById("restartButton");
 const pitchTypeButtons = [...document.querySelectorAll("[data-pitch-type]")];
-const battingModeButtons = [...document.querySelectorAll("[data-batting-mode]")];
+const swingZoneButtons = [...document.querySelectorAll("[data-swing-zone]")];
 const difficultyButtons = [...document.querySelectorAll("[data-difficulty]")];
 
 function syncCanvasResolution(canvas, ctx, logical) {
@@ -144,13 +146,32 @@ function renderButtons() {
     stealThirdButton.textContent = "停壘";
   } else {
     primaryActionButton.textContent = offenseMode ? "下一球" : "投球";
-    swingButton.textContent = "揮棒";
+    swingButton.textContent = "中段揮棒";
     stealSecondButton.textContent = "盜二壘";
     stealThirdButton.textContent = "盜三壘";
   }
 
   primaryActionButton.disabled = !canRequestPitch;
-  swingButton.disabled = manualRunning ? !selectedRunner : !canSwing;
+  const middleSwingDisabled = manualRunning ? !selectedRunner : !canSwing;
+  swingButton.disabled = middleSwingDisabled;
+  if (swingHighButton) {
+    swingHighButton.disabled = manualRunning || !canSwing;
+    swingHighButton.classList.toggle(
+      "is-active",
+      !manualRunning && game.battingMode === "high"
+    );
+  }
+  if (swingLowButton) {
+    swingLowButton.disabled = manualRunning || !canSwing;
+    swingLowButton.classList.toggle(
+      "is-active",
+      !manualRunning && game.battingMode === "low"
+    );
+  }
+  swingButton.classList.toggle(
+    "is-active",
+    !manualRunning && game.battingMode === "middle"
+  );
   stealSecondButton.disabled = manualRunning ? manualCandidates.length <= 1 : !canStealSecond;
   stealThirdButton.disabled = manualRunning ? !selectedRunner : !canStealThird;
 
@@ -160,12 +181,6 @@ function renderButtons() {
     const available = availablePitchTypes(pitcher).includes(button.dataset.pitchType);
     button.classList.toggle("is-active", selected);
     button.disabled = offenseMode || !awaitingPitch || manualRunning || game.gameOver || !available;
-  });
-
-  battingModeButtons.forEach((button) => {
-    const selected = button.dataset.battingMode === game.battingMode;
-    button.classList.toggle("is-active", selected);
-    button.disabled = !offenseMode || (!awaitingPitch && !inPitch) || manualRunning || game.gameOver;
   });
 
   difficultyButtons.forEach((button) => {
@@ -185,7 +200,7 @@ function renderButtons() {
   } else if (offenseMode) {
     pitchHintEl.textContent = game.pendingSteal
       ? "下球會啟動盜壘，打者會放掉這球。曲球與指叉球較容易抓到起跑點。"
-      : "觀察來球後再揮棒。早一點容易拉向左外野，晚一點會推向右外野。";
+      : "判斷球的高度後，按下對應段位（上／中／下）即揮棒。";
   } else {
     pitchHintEl.textContent = "點擊好球帶選位置。曲球下墜大、滑球橫移明顯、指叉球晚下沉。";
   }
@@ -241,6 +256,127 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
+const SWING_ANIMATION_MS = 280;
+
+function swingZoneBandY(zone, zoneY, zoneHeight) {
+  const third = zoneHeight / 3;
+  if (zone === "high") return zoneY + third * 0.5;
+  if (zone === "low") return zoneY + third * 2.5;
+  return zoneY + third * 1.5;
+}
+
+function drawBatterAndBat(width, height, zoneX, zoneY, zoneWidth, zoneHeight) {
+  if (!userOnOffense() || game.gameOver) {
+    return;
+  }
+  const batter = game.activeBatter;
+  if (!batter) return;
+  const bats = batter.bats === "L" ? "L" : "R";
+  // Right-handed batter stands on the LEFT of the strike zone (catcher's view);
+  // Left-handed batter stands on the RIGHT.
+  const onLeft = bats === "R";
+  const bodyX = onLeft ? zoneX - 28 : zoneX + zoneWidth + 28;
+  const bodyTop = zoneY + zoneHeight * 0.05;
+  const bodyHeight = zoneHeight * 0.95;
+  const bodyW = 14;
+
+  // Body
+  pitchCtx.save();
+  pitchCtx.fillStyle = "rgba(255, 232, 196, 0.92)";
+  pitchCtx.strokeStyle = "rgba(16, 36, 59, 0.65)";
+  pitchCtx.lineWidth = 2;
+  pitchCtx.beginPath();
+  pitchCtx.ellipse(bodyX, bodyTop + 14, 11, 12, 0, 0, Math.PI * 2);
+  pitchCtx.fill();
+  pitchCtx.stroke();
+  pitchCtx.fillStyle = onLeft ? "rgba(196, 72, 45, 0.92)" : "rgba(34, 80, 120, 0.92)";
+  drawRoundedRect(pitchCtx, bodyX - bodyW / 2, bodyTop + 22, bodyW, bodyHeight - 22, 6);
+  pitchCtx.fill();
+  pitchCtx.stroke();
+  pitchCtx.fillStyle = "rgba(16, 36, 59, 0.78)";
+  pitchCtx.font = "700 9px Trebuchet MS";
+  pitchCtx.textAlign = "center";
+  pitchCtx.textBaseline = "middle";
+  pitchCtx.fillText(bats, bodyX, bodyTop + 14);
+  pitchCtx.restore();
+
+  // Determine current swing animation
+  const now = performance.now();
+  const swingingZone = game.swingDisplay && game.swingDisplay.expires > now
+    ? game.swingDisplay.zone
+    : null;
+  const swingProgress = swingingZone
+    ? clamp(1 - (game.swingDisplay.expires - now) / SWING_ANIMATION_MS, 0, 1)
+    : 0;
+
+  // Bat: anchored at batter's hands; rotates from "ready" to "extended"
+  const restZone = game.battingMode || "middle";
+  const activeZone = swingingZone || restZone;
+  const anchorX = bodyX + (onLeft ? bodyW / 2 + 2 : -bodyW / 2 - 2);
+  const anchorY = bodyTop + 30;
+  const targetY = swingZoneBandY(activeZone, zoneY, zoneHeight);
+
+  // Ready angle (before swing) and extended angle (after swing through zone center)
+  // We draw bat as a line from anchor to a tip, parameterised by swingProgress.
+  const zoneCenterX = zoneX + zoneWidth / 2;
+  const readyTipX = onLeft ? bodyX - 4 : bodyX + 4;
+  const readyTipY = bodyTop - 2;
+  const extendedTipX = onLeft ? zoneCenterX + 26 : zoneCenterX - 26;
+  const extendedTipY = targetY;
+
+  // Mid swing point — slightly forward of zone, raised/lowered by zone band
+  const midTipX = onLeft ? zoneX + 6 : zoneX + zoneWidth - 6;
+  const midTipY = targetY + (activeZone === "high" ? -10 : activeZone === "low" ? 10 : 0);
+
+  let tipX;
+  let tipY;
+  if (swingingZone) {
+    if (swingProgress < 0.5) {
+      const t = swingProgress * 2;
+      tipX = lerp(readyTipX, midTipX, t);
+      tipY = lerp(readyTipY, midTipY, t);
+    } else {
+      const t = (swingProgress - 0.5) * 2;
+      tipX = lerp(midTipX, extendedTipX, t);
+      tipY = lerp(midTipY, extendedTipY, t);
+    }
+  } else {
+    tipX = readyTipX;
+    tipY = readyTipY;
+  }
+
+  // Highlight selected band on the strike zone (pre-swing intent indicator)
+  const bandTop = zoneY + ((restZone === "high" ? 0 : restZone === "middle" ? 1 : 2) * zoneHeight) / 3;
+  const bandHeight = zoneHeight / 3;
+  pitchCtx.save();
+  pitchCtx.fillStyle = swingingZone
+    ? "rgba(255, 221, 133, 0.22)"
+    : "rgba(255, 221, 133, 0.10)";
+  pitchCtx.fillRect(zoneX, bandTop, zoneWidth, bandHeight);
+  pitchCtx.restore();
+
+  // Bat
+  pitchCtx.save();
+  pitchCtx.lineCap = "round";
+  pitchCtx.strokeStyle = "rgba(255, 240, 210, 0.95)";
+  pitchCtx.lineWidth = 7;
+  pitchCtx.beginPath();
+  pitchCtx.moveTo(anchorX, anchorY);
+  pitchCtx.lineTo(tipX, tipY);
+  pitchCtx.stroke();
+  // bat knob
+  pitchCtx.fillStyle = "rgba(143, 45, 31, 0.92)";
+  pitchCtx.beginPath();
+  pitchCtx.arc(anchorX, anchorY, 4.5, 0, Math.PI * 2);
+  pitchCtx.fill();
+  // bat tip cap
+  pitchCtx.fillStyle = "rgba(255, 248, 224, 1)";
+  pitchCtx.beginPath();
+  pitchCtx.arc(tipX, tipY, 5, 0, Math.PI * 2);
+  pitchCtx.fill();
+  pitchCtx.restore();
+}
+
 function drawPitchCanvas() {
   const width = LOGICAL.pitch.width;
   const height = LOGICAL.pitch.height;
@@ -294,6 +430,8 @@ function drawPitchCanvas() {
     pitchCtx.lineTo(targetX, targetY + 16);
     pitchCtx.stroke();
   }
+
+  drawBatterAndBat(width, height, zoneX, zoneY, zoneWidth, zoneHeight);
 
   const pitch = game.currentPitch;
   if (pitch && game.phase === "pitching") {

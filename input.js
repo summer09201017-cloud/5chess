@@ -83,13 +83,24 @@ pitchTypeButtons.forEach((button) => {
   });
 });
 
-battingModeButtons.forEach((button) => {
+function commitSwingZone(zone) {
+  if (game.gameOver || !userOnOffense()) return;
+  setBattingMode(zone);
+  if (game.phase === "pitching" && game.currentPitch) {
+    resolveUserSwing(game.currentPitch.progress, zone);
+  }
+}
+
+swingZoneButtons.forEach((button) => {
   button.addEventListener("click", () => {
     enableGameFeedback();
-    if (!userOnOffense() || game.gameOver) {
+    if (game.phase === "manualRunning" && button.id === "swingButton") {
+      attemptManualAdvance();
       return;
     }
-    setBattingMode(button.dataset.battingMode);
+    const zone = button.dataset.swingZone;
+    if (!zone) return;
+    commitSwingZone(zone);
   });
 });
 
@@ -110,16 +121,6 @@ primaryActionButton.addEventListener("click", () => {
     return;
   }
   startPitch();
-});
-swingButton.addEventListener("click", () => {
-  enableGameFeedback();
-  if (game.phase === "manualRunning") {
-    attemptManualAdvance();
-    return;
-  }
-  if (game.phase === "pitching" && userOnOffense()) {
-    resolveUserSwing(game.currentPitch.progress);
-  }
 });
 stealSecondButton.addEventListener("click", () => {
   enableGameFeedback();
@@ -175,29 +176,29 @@ document.addEventListener("keydown", (event) => {
       return;
     }
     if (game.phase === "pitching") {
-      resolveUserSwing(game.currentPitch.progress);
+      commitSwingZone("middle");
     }
   }
 
-  if (userOnOffense() && (game.phase === "awaitPitch" || game.phase === "pitching")) {
-    if (event.code === "Digit1") {
+  if (
+    userOnOffense() &&
+    !manualFieldingActive() &&
+    (game.phase === "awaitPitch" || game.phase === "pitching")
+  ) {
+    const lower = event.key.toLowerCase();
+    if (lower === "q") {
       event.preventDefault();
-      setBattingMode("normal");
+      commitSwingZone("high");
       return;
     }
-    if (event.code === "Digit2") {
+    if (lower === "w") {
       event.preventDefault();
-      setBattingMode("pull");
+      commitSwingZone("middle");
       return;
     }
-    if (event.code === "Digit3") {
+    if (lower === "e") {
       event.preventDefault();
-      setBattingMode("push");
-      return;
-    }
-    if (event.key.toLowerCase() === "b") {
-      event.preventDefault();
-      setBattingMode("bunt");
+      commitSwingZone("low");
       return;
     }
   }
