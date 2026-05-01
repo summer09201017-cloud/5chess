@@ -581,15 +581,28 @@ function drawFieldCanvas() {
   }
 
   if (game.replay) {
+    const total = (typeof BALANCE !== "undefined" && BALANCE.replay && BALANCE.replay.durationMs) || 1500;
+    const remain = Math.max(0, Math.min(total, game.replay.remainingMs || 0));
+    const progress = 1 - remain / total;
+    const alpha = remain > 240 ? 1 : remain / 240;
     fieldCtx.save();
-    fieldCtx.fillStyle = "rgba(16, 36, 59, 0.62)";
-    drawRoundedRect(fieldCtx, 250, 92, 340, 58, 18);
+    fieldCtx.globalAlpha = alpha;
+    const boxW = 460;
+    const boxH = 88;
+    const boxX = 420 - boxW / 2;
+    const boxY = 30 + progress * 6;
+    fieldCtx.fillStyle = "rgba(16, 36, 59, 0.78)";
+    drawRoundedRect(fieldCtx, boxX, boxY, boxW, boxH, 22);
     fieldCtx.fill();
+    fieldCtx.strokeStyle = "rgba(255, 232, 196, 0.55)";
+    fieldCtx.lineWidth = 2;
+    drawRoundedRect(fieldCtx, boxX, boxY, boxW, boxH, 22);
+    fieldCtx.stroke();
     fieldCtx.fillStyle = "#fff8ee";
-    fieldCtx.font = "700 22px Trebuchet MS";
+    fieldCtx.font = "800 42px Trebuchet MS";
     fieldCtx.textAlign = "center";
     fieldCtx.textBaseline = "middle";
-    fieldCtx.fillText(game.replay.text, 420, 121);
+    fieldCtx.fillText(game.replay.text, 420, boxY + boxH / 2);
     fieldCtx.restore();
   }
 

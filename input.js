@@ -66,6 +66,7 @@ function gameLoop(timestamp) {
   updateRunnerAnimations(deltaMs);
   updateCatchDisplay(deltaMs);
   updateReplay(deltaMs);
+  updateAutoPitch(deltaMs);
   drawPitchCanvas();
   drawFieldCanvas();
   requestAnimationFrame(gameLoop);

@@ -378,6 +378,51 @@ function updateReplay(deltaMs) {
   }
 }
 
+const AUTO_PITCH_DELAY_MS = 1200;
+
+function updateAutoPitch(deltaMs) {
+  if (
+    !userOnOffense() ||
+    game.gameOver ||
+    game.phase !== "awaitPitch" ||
+    game.manualRunning
+  ) {
+    game.autoPitchTimer = 0;
+    return;
+  }
+  game.autoPitchTimer = (game.autoPitchTimer || 0) + deltaMs;
+  if (game.autoPitchTimer >= AUTO_PITCH_DELAY_MS) {
+    game.autoPitchTimer = 0;
+    startPitch();
+  }
+}
+
+const GENERIC_BANNERS = new Set(["你的進攻", "你的防守"]);
+
+function aiPlayByPlay() {
+  if (game.replay && game.replay.text) {
+    return `AI 播報：${game.replay.text}`;
+  }
+  if (game.phase === "pitching" && game.currentPitch) {
+    const label = game.currentPitch.profile?.label || "來球";
+    return `AI 播報：${label}進壘中，抓好揮棒時機。`;
+  }
+  if (game.phase === "ballInPlay") {
+    return "AI 播報：球已被打進場內，看落點決定下一步。";
+  }
+  if (game.banner && !GENERIC_BANNERS.has(game.banner)) {
+    return `AI 播報：${game.banner}`;
+  }
+  if (game.phase === "awaitPitch") {
+    const ms = Math.max(0, AUTO_PITCH_DELAY_MS - (game.autoPitchTimer || 0));
+    const seconds = Math.max(0, Math.ceil(ms / 100) / 10);
+    return seconds > 0
+      ? `AI 播報：投手準備中，約 ${seconds.toFixed(1)} 秒後自動投球。`
+      : "AI 播報：投手出手中…";
+  }
+  return "AI 播報：等待下一個動作。";
+}
+
 function coachAdvice() {
   if (game.gameOver) {
     return "比賽結束，可以重新開賽再挑戰一次。";
@@ -396,19 +441,7 @@ function coachAdvice() {
     return "守備時先搶好球數，兩好球後可以把球投到邊角誘打。";
   }
 
-  if (game.phase !== "awaitPitch" && game.phase !== "pitching") {
-    return "看球落點決定跑壘，別急著一次衝到底。";
-  }
-  if (game.strikes >= 2) {
-    return "兩好球後會自動進入保護打擊；推打或正常揮棒比較穩。";
-  }
-  if (game.bases[0] && game.outs <= 1) {
-    return "一壘有人、出局少：可選觸擊推進，或用拉打尋找長打。";
-  }
-  if (game.bases[2] && game.outs < 2) {
-    return "三壘有人時，觸擊或高飛球都有機會換回分數。";
-  }
-  return "沒人上壘時可用拉打拚長打；落後球數時改正常或推打。";
+  return aiPlayByPlay();
 }
 
 function userOnOffense() {
@@ -487,6 +520,7 @@ function resetGame() {
     selectedTarget: { x: 0.5, y: 0.56 },
     battingMode: "normal",
     difficulty: previousDifficulty,
+    autoPitchTimer: 0,
     pitchers: buildPitchers(),
     phase: "awaitPitch",
     currentPitch: null,
@@ -939,6 +973,7 @@ function calledPitchResult(pitch) {
       game.outs += 1;
       pushLog(`${game.activeBatter.name} 被三振。`);
       game.banner = userOnOffense() ? "三振出局" : "漂亮三振";
+      triggerReplay(userOnOffense() ? "三振出局" : "三振！");
       feedback("strikeout", [45, 30, 45]);
       finishPlateAppearance("三振換人。");
       return;
@@ -1024,6 +1059,7 @@ function resolveUserSwing(progress) {
     if (game.strikes >= 3) {
       game.outs += 1;
       game.banner = "揮棒落空";
+      triggerReplay("三振出局");
       feedback("strikeout", [45, 30, 45]);
       finishPlateAppearance("三振出局。");
       return;
@@ -1095,6 +1131,7 @@ function resolveAiSwing() {
     if (game.strikes >= 3) {
       game.outs += 1;
       game.banner = "你成功三振打者";
+      triggerReplay("三振！");
       feedback("strikeout", [45, 30, 45]);
       finishPlateAppearance("精彩三振。");
       return;
@@ -1868,6 +1905,9 @@ function advanceOnHitAutomatically(baseAward, ball) {
 
   pushLog(`${game.activeBatter.name} 擊出${resultText}。`);
   game.banner = resultText;
+  if (!game.replay) {
+    triggerReplay(resultText);
+  }
   finishPlateAppearance(`形成${resultText}，跑者持續推進。`);
 }
 
@@ -1908,6 +1948,7 @@ function resolveCaughtFly(ball) {
   startRunnerAnimations(moves);
   pushLog(`${game.activeBatter.name} 的高飛球被接殺。`);
   game.banner = "高飛球接殺";
+  triggerReplay("接殺！");
   startCatchDisplay(ball, catcher, () => finishPlateAppearance("高飛球被穩穩接住。"));
 }
 
@@ -1987,6 +2028,7 @@ function resolveGroundOut(ball) {
   game.bases = newBases;
   pushLog(`${game.activeBatter.name} 遭內野處理出局。`);
   game.banner = "滾地出局";
+  triggerReplay("滾地出局");
   startCatchDisplay(ball, catcher, () => finishPlateAppearance("滾地球被內野處理。"));
 }
 
@@ -2036,6 +2078,7 @@ function advanceOnFieldingError(ball) {
   startRunnerAnimations(moves);
   pushLog(`${resolveCatcher(ball).label} 發生守備失誤，${game.activeBatter.name} 上壘。`);
   game.banner = "守備失誤";
+  triggerReplay("失誤漏接");
   feedback("out", 24);
   finishPlateAppearance("守備失誤讓打者安全上壘。");
 }

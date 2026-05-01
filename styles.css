@@ -661,7 +661,7 @@ button:disabled {
     padding: 6px;
     gap: 6px;
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.9fr);
     grid-template-rows: minmax(0, 1fr) auto;
     grid-template-areas:
       "field pitch controls"
