@@ -638,7 +638,7 @@ button:disabled {
   display: none;
 }
 
-/* === 手機橫向：50/50 緊湊版面 === */
+/* === 手機橫向：3 欄版面（球場 | 投打+計分 | 操作） === */
 @media (orientation: landscape) and (max-height: 540px) {
   html,
   body {
@@ -659,13 +659,18 @@ button:disabled {
     height: 100dvh;
     max-width: none;
     padding: 6px;
-    display: flex;
-    flex-direction: column;
     gap: 6px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "field pitch controls"
+      "field score controls";
   }
 
-  /* --- 計分板：搬到投打視窗右側，直立排列 --- */
-  .scoreboard {
+  .scoreboard,
+  .main-layout,
+  .sidebar {
     display: contents;
   }
 
@@ -674,57 +679,56 @@ button:disabled {
     display: none;
   }
 
+  /* --- 計分板：投打視窗下方，橫向窄條 --- */
   .score-grid {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 96px;
+    grid-area: score;
+    position: static;
+    width: auto;
     margin: 0;
-    z-index: 6;
+    padding: 0;
     display: flex;
-    flex-direction: column;
-    gap: 5px;
-    pointer-events: auto;
+    flex-direction: row;
+    gap: 4px;
   }
 
   .team-box,
   .center-box {
+    flex: 1 1 0;
     min-height: 0;
-    padding: 6px 6px;
-    border-radius: 10px;
-    flex-direction: column;
+    padding: 4px 6px;
+    border-radius: 8px;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 2px;
+    gap: 5px;
     text-align: center;
   }
 
   .team-role {
-    opacity: 0.85;
-    font-size: 0.54rem;
-    letter-spacing: 0.06em;
-    line-height: 1.1;
+    display: none;
   }
 
   .team-name {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
     line-height: 1.1;
+    letter-spacing: 0;
   }
 
   .team-score {
-    font-size: 1.35rem;
+    font-size: 1rem;
     line-height: 1;
   }
 
   .center-box {
-    padding: 6px 6px;
-    gap: 2px;
+    padding: 4px 6px;
+    gap: 4px;
   }
 
   .inning-pill {
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
   }
 
   .inning-pill span {
@@ -732,19 +736,12 @@ button:disabled {
   }
 
   .inning-pill strong {
-    font-size: 0.88rem;
+    font-size: 0.78rem;
   }
 
-  /* --- 主版面：左 50% 球場、右 50% 操作 --- */
-  .main-layout {
-    flex: 1 1 auto;
-    min-height: 0;
-    margin-top: 0;
-    gap: 6px;
-    grid-template-columns: 1fr 1fr;
-  }
-
+  /* --- 球場視角（左欄，跨兩列） --- */
   .field-card {
+    grid-area: field;
     margin: 0;
     padding: 6px;
     border-radius: 14px;
@@ -790,68 +787,78 @@ button:disabled {
     border-left: 1px solid rgba(255, 255, 255, 0.58);
   }
 
-  /* --- 右側欄：投打 + 操作 + 播報 --- */
-  .sidebar {
+  /* --- 投打視窗（中間欄，row 1） --- */
+  .pitch-card {
+    grid-area: pitch;
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: 14px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
     min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 108px; /* 留給 .score-grid 直立面板 96px + gap */
-    grid-template-columns: 1fr;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
   }
 
-  .sidebar > .card {
-    grid-column: auto;
-  }
-
-  .pitch-card,
-  .control-card,
-  .log-card {
-    padding: 8px 10px;
-    border-radius: 14px;
-  }
-
-  .pitch-card .section-head,
-  .control-card .section-head,
-  .log-card .section-head {
+  .pitch-card .section-head {
+    flex: 0 0 auto;
     flex-direction: row;
     align-items: center;
     gap: 6px;
   }
 
-  .pitch-card .eyebrow,
-  .control-card .eyebrow,
-  .log-card .eyebrow {
+  .pitch-card .eyebrow {
     margin: 0;
     font-size: 0.6rem;
     letter-spacing: 0.1em;
   }
 
-  .log-card h2 {
-    font-size: 0.85rem;
-  }
-
   .count-strip {
     margin-left: auto;
     gap: 10px;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
   }
 
   .count-strip strong {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   #pitchCanvas {
-    margin: 6px auto 0;
+    flex: 1 1 0;
+    align-self: center;
+    min-height: 0;
     width: auto;
     max-width: 100%;
-    height: 53vh; /* 44vh × 1.2 */
-    max-height: 264px; /* 220px × 1.2 */
+    margin: 4px auto 0;
     aspect-ratio: 360 / 440;
     border-radius: 10px;
+  }
+
+  /* --- 操作區（最右欄，跨兩列，內部捲動） --- */
+  .control-card {
+    grid-area: controls;
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: 14px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .control-card .section-head {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .control-card .eyebrow {
+    margin: 0;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* --- 比賽播報（手機橫向時隱藏，省空間） --- */
+  .log-card {
+    display: none;
   }
 
   /* --- 按鈕全部縮小 --- */
@@ -859,25 +866,25 @@ button:disabled {
   .mode-button,
   .secondary-action,
   .ghost-action {
-    min-height: 32px;
+    min-height: 30px;
     padding: 4px 6px;
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(16, 36, 59, 0.08);
   }
 
   .primary-action {
     grid-column: auto;
-    min-height: 38px;
+    min-height: 36px;
     padding: 6px 10px;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     border-radius: 10px;
     box-shadow: 0 8px 16px rgba(143, 45, 31, 0.24);
   }
 
   .solo-action {
     width: 100%;
-    margin-top: 6px;
+    margin-top: 5px;
   }
 
   .control-section {
@@ -886,7 +893,7 @@ button:disabled {
 
   .control-label {
     margin-bottom: 4px;
-    font-size: 0.66rem;
+    font-size: 0.64rem;
     letter-spacing: 0.04em;
   }
 
@@ -899,16 +906,20 @@ button:disabled {
 
   .pitch-type-grid,
   .batting-mode-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .action-grid {
     margin-top: 6px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .ghost-action {
     grid-column: auto;
+  }
+
+  .difficulty-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .post-action-status {
@@ -930,21 +941,21 @@ button:disabled {
 
   .info-box span {
     margin-bottom: 2px;
-    font-size: 0.62rem;
+    font-size: 0.6rem;
   }
 
   .info-box strong {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     line-height: 1.3;
   }
 
   .meter-topline {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     gap: 8px;
   }
 
   .meter-topline strong {
-    font-size: 0.74rem;
+    font-size: 0.72rem;
   }
 
   .meter-track {
@@ -957,24 +968,12 @@ button:disabled {
   }
 
   .coach-box {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     line-height: 1.4;
   }
 
   .info-box.shortcut-box {
     display: none; /* 手機沒實體鍵盤 */
-  }
-
-  .log-list {
-    margin-top: 6px;
-    gap: 4px;
-  }
-
-  .log-list li {
-    padding: 6px 8px;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    line-height: 1.4;
   }
 
   /* --- 全螢幕切換按鈕 --- */
