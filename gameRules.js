@@ -385,10 +385,12 @@ function recordHotZone(result, target) {
   };
 }
 
-function triggerReplay(text) {
+function triggerReplay(text, durationMs) {
+  const total = durationMs ?? BALANCE.replay.durationMs;
   game.replay = {
     text,
-    remainingMs: BALANCE.replay.durationMs,
+    remainingMs: total,
+    totalMs: total,
   };
 }
 
@@ -403,7 +405,8 @@ function updateReplay(deltaMs) {
   }
 }
 
-const AUTO_PITCH_DELAY_MS = 1200;
+const AUTO_PITCH_DELAY_MS = 10000;
+const PITCH_READY_NOTICE_MS = 3000;
 
 function updateAutoPitch(deltaMs) {
   if (
@@ -413,11 +416,20 @@ function updateAutoPitch(deltaMs) {
     game.manualRunning
   ) {
     game.autoPitchTimer = 0;
+    game.autoPitchAnnounced = false;
     return;
   }
   game.autoPitchTimer = (game.autoPitchTimer || 0) + deltaMs;
+
+  const announceAt = AUTO_PITCH_DELAY_MS - PITCH_READY_NOTICE_MS;
+  if (!game.autoPitchAnnounced && game.autoPitchTimer >= announceAt) {
+    game.autoPitchAnnounced = true;
+    triggerReplay("投手準備要投球了", PITCH_READY_NOTICE_MS);
+  }
+
   if (game.autoPitchTimer >= AUTO_PITCH_DELAY_MS) {
     game.autoPitchTimer = 0;
+    game.autoPitchAnnounced = false;
     startPitch();
   }
 }
@@ -440,9 +452,12 @@ function aiPlayByPlay() {
   }
   if (game.phase === "awaitPitch") {
     const ms = Math.max(0, AUTO_PITCH_DELAY_MS - (game.autoPitchTimer || 0));
-    const seconds = Math.max(0, Math.ceil(ms / 100) / 10);
+    const seconds = Math.max(0, Math.ceil(ms / 1000));
+    if (game.autoPitchAnnounced) {
+      return `AI 播報：投手準備要投球了，倒數 ${seconds} 秒。`;
+    }
     return seconds > 0
-      ? `AI 播報：投手準備中，約 ${seconds.toFixed(1)} 秒後自動投球。`
+      ? `AI 播報：投手調整節奏中，約 ${seconds} 秒後出手。`
       : "AI 播報：投手出手中…";
   }
   return "AI 播報：等待下一個動作。";
@@ -546,6 +561,7 @@ function resetGame() {
     battingMode: "middle",
     difficulty: previousDifficulty,
     autoPitchTimer: 0,
+    autoPitchAnnounced: false,
     swingDisplay: null,
     pitchers: buildPitchers(),
     phase: "awaitPitch",

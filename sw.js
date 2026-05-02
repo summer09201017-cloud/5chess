@@ -1,4 +1,4 @@
-const CACHE_NAME = "baseball-duel-v13";
+const CACHE_NAME = "baseball-duel-v14";
 const STATIC_ASSETS = [
   "./",
   "./index.html",

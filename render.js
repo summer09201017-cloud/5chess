@@ -719,7 +719,8 @@ function drawFieldCanvas() {
   }
 
   if (game.replay) {
-    const total = (typeof BALANCE !== "undefined" && BALANCE.replay && BALANCE.replay.durationMs) || 1500;
+    const fallback = (typeof BALANCE !== "undefined" && BALANCE.replay && BALANCE.replay.durationMs) || 1500;
+    const total = game.replay.totalMs || fallback;
     const remain = Math.max(0, Math.min(total, game.replay.remainingMs || 0));
     const progress = 1 - remain / total;
     const alpha = remain > 240 ? 1 : remain / 240;
