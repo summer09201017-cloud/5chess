@@ -9,7 +9,8 @@ repo 與網址都叫 **5chess,但這是棒球,不是五子棋**。
 - 本 repo 的正版線上網址:**https://3d-5chess.pages.dev**(Cloudflare Pages 專案 `3d-5chess`)。
 - 德義作品集卡片:`3d-5chess`「九局熱戰(Baseball Duel)」,分類**遊戲**(不是棋類)。
 - 舊址 `3d-5chess.netlify.app` 已是 301 殼,轉到上面的正版。
-- **不是本 repo 的站**:`5chess.pages.dev`(決戰房市五子棋,本機找不到源碼、不在本帳號 Pages 清單)、
+- **不是本 repo 的站**(都是德義自己的作品,各有一張作品集卡):`5chess.pages.dev`(決戰房市五子棋,卡 `5chess-housing`;
+  源碼在另一顆硬碟、不在這台機的 Cloudflare 帳號 Pages 清單裡,0903 使用者確認)、
   `5-chess.pages.dev`(3D 五子棋,repo 在 `Desktop\chess5`)。
 
 ## 玩法
