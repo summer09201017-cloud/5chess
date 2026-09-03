@@ -8,7 +8,10 @@ repo 與網址都叫 **5chess,但這是棒球,不是五子棋**。
 
 - 本 repo 的正版線上網址:**https://3d-5chess.pages.dev**(Cloudflare Pages 專案 `3d-5chess`)。
 - 德義作品集卡片:`3d-5chess`「九局熱戰(Baseball Duel)」,分類**遊戲**(不是棋類)。
-- 舊址 `3d-5chess.netlify.app` 已是 301 殼,轉到上面的正版。
+- 舊址 `3d-5chess.netlify.app` 已是 301 殼,轉到上面的正版(0903 重掛一次)。
+  ⚠ 本 repo 連著**兩個** Netlify 站的 GitHub 自動建置:`3d-5chess` 與 `deyi-baseball`(後者網址名字像 3D 棒球對決,內容其實是本 repo 的九局熱戰)。
+  0903 推 README 就觸發兩站重建、把 301 殼蓋回完整站;兩站 `build_settings.stop_builds` 已設 true,之後 push 不再觸發 Netlify 建置。
+  `deyi-baseball.netlify.app` 要不要也改 301(到 3d-5chess.pages.dev)列在減站清單 D2,等使用者拍板。
 - **不是本 repo 的站**(都是德義自己的作品,各有一張作品集卡):`5chess.pages.dev`(決戰房市五子棋,卡 `5chess-housing`;
   源碼在另一顆硬碟、不在這台機的 Cloudflare 帳號 Pages 清單裡,0903 使用者確認)、
   `5-chess.pages.dev`(3D 五子棋,repo 在 `Desktop\chess5`)。
