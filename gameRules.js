@@ -598,6 +598,8 @@ function continueAtBat(note) {
 }
 
 function endGame(message) {
+  // 📡 完賽 beacon:九局打完(或提前分出勝負)= 一次 -done。打點函式住在 index.html;統計是配菜,失敗靜默。
+  if (typeof window !== "undefined" && window.psDone) window.psDone();
   game.gameOver = true;
   game.phase = "gameOver";
   game.currentPitch = null;
