@@ -1,7 +1,6 @@
-const CACHE_NAME = "baseball-duel-v15";
+const CACHE_NAME = "baseball-duel-v16";
 const STATIC_ASSETS = [
   "./",
-  "./index.html",
   "./styles.css",
   "./constants.js",
   "./gameRules.js",
@@ -15,7 +14,7 @@ const STATIC_ASSETS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => Promise.all(STATIC_ASSETS.map((u) => cache.add(u).catch(() => null))))
   );
   self.skipWaiting();
 });

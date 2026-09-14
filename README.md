@@ -53,3 +53,7 @@ curl -s "https://3d-5chess.pages.dev/sw.js?b=$RANDOM" | grep CACHE_NAME   # 要�
 
 ---
 GitHub:`summer09201017-cloud/5chess`。本 README 2026-09-03 補(此前文件沒寫網址,作品集對賬只能靠名字猜到本 repo)。
+
+## 現況(2026-09-14)
+
+- 🩹 拔掉「index.html 進 SW 快取 / start_url」地雷(3D-Chess 幻影版同日實錘「裝成 App 打開 ERR_FAILED」:Pages/Workers 把 /index.html 308 到 /,快取存到轉址過的回應,導覽拿到就被瀏覽器拒絕):manifest start_url ./index.html → ./(id 明寫舊值保住 App 身分)、SW 名單拔 index.html、離線退路改 ./、addAll → 逐一 add+catch、CACHE 版號 +1。用 skills repo static-pwa-ship/patches/patch-sw-index.mjs 打的;規矩見該 skill 鐵則。已裝的 App 第一次開若失敗,用瀏覽器開一次首頁或移除重裝。
