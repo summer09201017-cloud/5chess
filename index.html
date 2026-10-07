@@ -144,8 +144,8 @@
 
             <div class="bottom-control-stack">
               <div class="control-section">
-                <p class="control-label">最新戰況報告</p>
-                <div class="coach-box" id="coachAdvice">AI 戰況播報會即時更新。</div>
+                <p class="control-label">投手說話</p>
+                <div class="coach-box" id="coachAdvice">投手:比賽開始!我站上投手丘了,給我暗號吧!</div>
               </div>
 
               <div class="control-section">
@@ -154,6 +154,14 @@
                   <button class="mode-button" data-difficulty="rookie">新手</button>
                   <button class="mode-button is-active" data-difficulty="normal">標準</button>
                   <button class="mode-button" data-difficulty="veteran">老手</button>
+                </div>
+              </div>
+
+              <div class="control-section">
+                <p class="control-label">投手人聲</p>
+                <div class="difficulty-grid voice-grid">
+                  <button class="mode-button is-active" data-voice="on">開</button>
+                  <button class="mode-button" data-voice="off">關</button>
                 </div>
               </div>
 
@@ -179,6 +187,8 @@
     </div>
 
     <script src="constants.js" defer></script>
+    <script src="pitcherLines.js" defer></script>
+    <script src="voice.js" defer></script>
     <script src="gameRules.js" defer></script>
     <script src="render.js" defer></script>
     <script src="input.js" defer></script>

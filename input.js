@@ -67,6 +67,7 @@ function gameLoop(timestamp) {
   updateCatchDisplay(deltaMs);
   updateReplay(deltaMs);
   updateAutoPitch(deltaMs);
+  renderPitcherTalk();
   drawPitchCanvas();
   drawFieldCanvas();
   requestAnimationFrame(gameLoop);
@@ -240,4 +241,14 @@ window.addEventListener("resize", syncAllCanvases);
 
 syncAllCanvases();
 resetGame();
+voiceButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    enableGameFeedback();
+    if (typeof VOICE !== "undefined") {
+      VOICE.setEnabled(button.dataset.voice === "on");
+    }
+    renderButtons();
+  });
+});
+
 requestAnimationFrame(gameLoop);

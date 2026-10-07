@@ -436,52 +436,91 @@ function updateAutoPitch(deltaMs) {
 
 const GENERIC_BANNERS = new Set(["你的進攻", "你的防守"]);
 
-function aiPlayByPlay() {
-  if (game.replay && game.replay.text) {
-    return `AI 播報：${game.replay.text}`;
-  }
-  if (game.phase === "pitching" && game.currentPitch) {
-    const label = game.currentPitch.profile?.label || "來球";
-    return `AI 播報：${label}進壘中，抓好揮棒時機。`;
-  }
-  if (game.phase === "ballInPlay") {
-    return "AI 播報：球已被打進場內，看落點決定下一步。";
-  }
-  if (game.banner && !GENERIC_BANNERS.has(game.banner)) {
-    return `AI 播報：${game.banner}`;
-  }
-  if (game.phase === "awaitPitch") {
-    const ms = Math.max(0, AUTO_PITCH_DELAY_MS - (game.autoPitchTimer || 0));
-    const seconds = Math.max(0, Math.ceil(ms / 1000));
-    if (game.autoPitchAnnounced) {
-      return `AI 播報：投手準備要投球了，倒數 ${seconds} 秒。`;
-    }
-    return seconds > 0
-      ? `AI 播報：投手調整節奏中，約 ${seconds} 秒後出手。`
-      : "AI 播報：投手出手中…";
-  }
-  return "AI 播報：等待下一個動作。";
+// ── 讓投手說話(2026-10-07 使用者拍板):第三人稱「AI 播報」換成投手第一人稱台詞 ──
+// 畫面文字與唸稿都從 pitcherLines.js 的同一張表取;哪一側在說話看 userOnOffense()(你進攻=對面的 AI 投手、你防守=你的投手)。
+function pitcherTable(name) {
+  const scope = typeof window !== "undefined" ? window : globalThis;
+  return scope[name] || {};
 }
 
-function coachAdvice() {
+function pitcherLine(key, vars) {
+  const entry = pitcherTable("PITCHER_LINES")[key];
+  if (!entry) {
+    return { text: key, say: null };
+  }
+  const line = entry[userOnOffense() ? "off" : "def"] || entry.off || entry.def;
+  let text = line.sub;
+  if (vars) {
+    Object.keys(vars).forEach((name) => {
+      text = text.replace(`{${name}}`, vars[name]);
+    });
+  }
+  return { text, say: line.say };
+}
+
+function pitcherTalk() {
   if (game.gameOver) {
-    return "比賽結束，可以重新開賽再挑戰一次。";
+    return pitcherLine("gameOver");
   }
   if (game.phase === "manualRunning") {
-    return "前方跑者優先判斷；深遠安打可以多衝，短淺球先停壘比較穩。";
+    return pitcherLine("manualRunning");
   }
-  if (!userOnOffense()) {
+  if (game.replay && game.replay.text) {
+    const replayKey = pitcherTable("PITCHER_REPLAY_KEYS")[game.replay.text];
+    if (replayKey) {
+      return pitcherLine(replayKey);
+    }
+  }
+  if (game.phase === "pitching" && game.currentPitch) {
+    const pitchKey = `pitch_${game.currentPitch.pitchTypeKey}`;
+    return pitcherLine(pitcherTable("PITCHER_LINES")[pitchKey] ? pitchKey : "pitch_other");
+  }
+  if (game.phase === "ballInPlay") {
+    return pitcherLine("ballInPlay");
+  }
+  if (game.banner && !GENERIC_BANNERS.has(game.banner)) {
+    const banner = game.banner;
+    const bannerKey = pitcherTable("PITCHER_BANNER_KEYS")[banner];
+    if (bannerKey) {
+      return pitcherLine(bannerKey);
+    }
+    const top = banner.match(/^第 (\d+) 局上半/);
+    if (top) {
+      return pitcherLine("inningTop", { n: top[1] });
+    }
+    const bottom = banner.match(/^第 (\d+) 局下半/);
+    if (bottom) {
+      return pitcherLine("inningBottom", { n: bottom[1] });
+    }
+    if (/^比賽開始/.test(banner)) {
+      return pitcherLine("gameStart");
+    }
+    return { text: banner, say: null };
+  }
+  if (game.phase === "awaitPitch") {
+    if (userOnOffense()) {
+      const ms = Math.max(0, AUTO_PITCH_DELAY_MS - (game.autoPitchTimer || 0));
+      const seconds = Math.max(0, Math.ceil(ms / 1000));
+      if (game.autoPitchAnnounced) {
+        return pitcherLine("ready", { n: seconds });
+      }
+      return seconds > 0 ? pitcherLine("idleAdjust", { n: seconds }) : pitcherLine("idleThrow");
+    }
     const pitcher = currentPitcher();
     if (pitcher && staminaPercent(pitcher) < 0.35) {
-      return `${pitcher.name} 體力偏低，優先用控球好的球種搶好球數。`;
+      return pitcherLine("idleDefenseTired");
     }
     if (game.bases[0] && !game.bases[1]) {
-      return "一壘有人，小心跑者起跑；滑球或指叉可壓低製造滾地球。";
+      return pitcherLine("idleDefenseRunner");
     }
-    return "守備時先搶好球數，兩好球後可以把球投到邊角誘打。";
+    return pitcherLine("idleDefense");
   }
+  return pitcherLine("idleGeneric");
+}
 
-  return aiPlayByPlay();
+// 舊名保留(回傳純文字),免得還有誰在叫它
+function coachAdvice() {
+  return pitcherTalk().text;
 }
 
 function userOnOffense() {

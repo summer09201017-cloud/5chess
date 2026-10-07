@@ -32,6 +32,7 @@ const restartButton = document.getElementById("restartButton");
 const pitchTypeButtons = [...document.querySelectorAll("[data-pitch-type]")];
 const swingZoneButtons = [...document.querySelectorAll("[data-swing-zone]")];
 const difficultyButtons = [...document.querySelectorAll("[data-difficulty]")];
+const voiceButtons = [...document.querySelectorAll("[data-voice]")];
 
 function syncCanvasResolution(canvas, ctx, logical) {
   const dpr = window.devicePixelRatio || 1;
@@ -183,6 +184,10 @@ function renderButtons() {
     button.disabled = offenseMode || !awaitingPitch || manualRunning || game.gameOver || !available;
   });
 
+  voiceButtons.forEach((button) => {
+    const voiceOn = typeof VOICE === "undefined" ? true : VOICE.isEnabled();
+    button.classList.toggle("is-active", (button.dataset.voice === "on") === voiceOn);
+  });
   difficultyButtons.forEach((button) => {
     const selected = button.dataset.difficulty === game.difficulty;
     button.classList.toggle("is-active", selected);
@@ -230,10 +235,24 @@ function renderHUD() {
   pitcherStaminaTextEl.textContent = `體力 ${stamina}%`;
   pitcherStaminaBarEl.style.width = `${stamina}%`;
   pitcherStaminaBarEl.classList.toggle("is-low", stamina < 35);
-  coachAdviceEl.textContent = coachAdvice();
+  renderPitcherTalk();
   renderLineScore();
   renderButtons();
   renderLog();
+}
+
+// 投手說話:畫面文字(只在變動時改 DOM)+ 人聲(同一句只唸一次;renderHUD 與每一幀 gameLoop 都會叫)
+let lastPitcherText = null;
+function renderPitcherTalk() {
+  const line = pitcherTalk();
+  const text = `投手:${line.text}`;
+  if (text !== lastPitcherText) {
+    lastPitcherText = text;
+    coachAdviceEl.textContent = text;
+  }
+  if (typeof VOICE !== "undefined") {
+    VOICE.say(line.say, Boolean(game.feedbackEnabled));
+  }
 }
 
 function renderAll() {

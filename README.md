@@ -21,6 +21,8 @@ repo 與網址都叫 **5chess,但這是棒球,不是五子棋**。
 - 投球:直球 / 曲球 / 滑球 / 指叉,選九宮格落點;打擊:上段 / 中段 / 下段揮棒;可盜二壘、盜三壘。
 - AI 守方自動投球(投手就位播報後約 10 秒)、AI 逐球播報、結果重播 overlay、戰報標頭、新手模式。
 - 手機全螢幕與 iOS 安裝提示(manifest + fallback 鈕)。
+- 🗣 **投手說話**(2026-10-07):原本的「AI 播報」改成投手第一人稱台詞(你防守=你的投手、你進攻=對面的 AI 投手),
+  畫面文字 + 預烤 mp3 人聲(雲哲);右欄「投手人聲 開/關」可關,記在 localStorage。
 
 ## 檔案
 
@@ -29,10 +31,14 @@ repo 與網址都叫 **5chess,但這是棒球,不是五子棋**。
 | `index.html` / `styles.css` | 殼層與版面(控制欄在右、九宮格放大) |
 | `gameRules.js` `constants.js` | 規則與數值(接觸率、AI 接殺率等) |
 | `render.js` `input.js` | 畫面與操作 |
-| `pwa.js` / `sw.js` | 安裝與 Service Worker,`CACHE_NAME = "baseball-duel-v14"`(改殼層檔必 +1) |
+| `pitcherLines.js` | 投手台詞表(off=你進攻/def=你防守,每條 sub 畫面字 + say 唸稿);改台詞只改這裡 |
+| `voice.js` / `voice/` | 人聲 runtime(全域 `VOICE`,mp3 優先、缺檔靜默、**絕不用 Web Speech**)與 50 支預烤 mp3 + manifest.json |
+| `scripts/gen-voice.mjs` | 烤 mp3(借 Desktop/baseball3d 的 msedge-tts ^2.0.7,需網路,累加式) |
+| `scripts/sync-voice-sw.mjs` | 把 voice/ 的 mp3 清單寫進 sw.js;`--check` 對賬(唸稿↔mp3↔sw.js、禁 Web Speech) |
+| `pwa.js` / `sw.js` | 安裝與 Service Worker,`CACHE_NAME = "baseball-duel-v17"`(改殼層檔必 +1;改台詞烤完要跑 sync-voice-sw) |
 | `manifest.webmanifest` / `icons/` | PWA |
 
-沒有 `package.json`、沒有自動測試;改完用真瀏覽器打一局。
+沒有 `package.json`、沒有自動測試;改完用真瀏覽器打一局。改台詞的驗法:`node scripts/gen-voice.mjs && node scripts/sync-voice-sw.mjs --check`。
 
 ## 跑起來
 
@@ -53,6 +59,13 @@ curl -s "https://3d-5chess.pages.dev/sw.js?b=$RANDOM" | grep CACHE_NAME   # 要�
 
 ---
 GitHub:`summer09201017-cloud/5chess`。本 README 2026-09-03 補(此前文件沒寫網址,作品集對賬只能靠名字猜到本 repo)。
+
+## 現況(2026-10-07)
+
+- 🗣 **讓投手說話**(使用者原話「九局熱戰要改成『讓投手說話』」,破例免規格直接做):`gameRules.js` 的 `aiPlayByPlay()`/`coachAdvice()`
+  換成 `pitcherTalk()`,回 `{text, say}`;`render.js` 的 `renderPitcherTalk()` 每幀跑(文字變了才改 DOM、`VOICE.say` 同句只唸一次,
+  第一次點畫面前不唸、解鎖後補唸);`input.js` 加「投手人聲 開/關」鈕。50 句唸稿全部預烤(雲哲),sw v17 把 mp3 全進快取。
+  未對照到的 banner 會原樣顯示、不唸(不會壞)。驗過:headless 情境 25 條 + 源碼 banner/replay 字串全對照 + 真瀏覽器投一球。
 
 ## 現況(2026-09-14)
 
